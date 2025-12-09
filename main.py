@@ -70,3 +70,17 @@ def crear_municipio(nuevo_muni: dict):
     
     guardar_datos(datos)
     return {"mensaje": "Municipio creado exitosamente", "municipio": nuevo_muni}
+
+@app.delete("/municipios/{id_municipio}", dependencies=[Depends(verificar_admin)])
+def borrar_municipio(id_municipio: str):
+    datos = cargar_datos()
+    lista_municipios = datos.get("municipios", [])
+    
+    nueva_lista = [m for m in lista_municipios if m['id'] != id_municipio]
+    
+    if len(lista_municipios) == len(nueva_lista):
+        raise HTTPException(status_code=404, detail="Municipio no encontrado para eliminar")
+        
+    datos["municipios"] = nueva_lista
+    guardar_datos(datos)
+    return {"mensaje": f"Municipio {id_municipio} eliminado"}
