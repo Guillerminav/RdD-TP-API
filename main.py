@@ -5,6 +5,9 @@ from pathlib import Path
 
 json_path = Path(__file__).parent / "municipios.json"
 
+app = FastAPI()
+security = HTTPBasic()
+
 def cargar_datos():
     if not json_path.exists():
         return {"municipios": []}
@@ -15,9 +18,16 @@ def cargar_datos():
 def guardar_datos(datos):
     with open(json_path, 'w', encoding='utf-8') as file:
         json.dump(datos, file, indent=4, ensure_ascii=False)
-        
-app = FastAPI()
-security = HTTPBasic()
+
+def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    """Verifica usuario y contraseña"""
+    user = "admin"
+    password = "admin"
+    
+    if credentials.username != user or credentials.password != password:
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    return credentials.username
+       
 
 #aca iria toda la data gral de la api
 @app.get("/")
@@ -41,3 +51,22 @@ def obtener_municipio(id_municipio: str):
             return municipio
     
     raise HTTPException(status_code=404, detail="Municipio no encontrado")
+
+@app.post("/municipios", dependencies=[Depends(verificar_admin)])
+def crear_municipio(nuevo_muni: dict):
+    if "id" not in nuevo_muni or "nombre" not in nuevo_muni:
+        raise HTTPException(status_code=400, detail="Faltan datos obligatorios (id, nombre)")
+
+    datos = cargar_datos()
+    lista_municipios = datos.get("municipios", [])
+    
+    # Validar que el ID no exista ya
+    for m in lista_municipios:
+        if m['id'] == nuevo_muni['id']:
+            raise HTTPException(status_code=400, detail=f"El ID {m['id']} pertenece al municipio {m['nombre']}")
+    
+    lista_municipios.append(nuevo_muni)
+    datos["municipios"] = lista_municipios
+    
+    guardar_datos(datos)
+    return {"mensaje": "Municipio creado exitosamente", "municipio": nuevo_muni}
