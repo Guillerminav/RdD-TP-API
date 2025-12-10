@@ -54,7 +54,7 @@ def obtener_municipio(id_municipio: str):
 
 @app.post("/municipios", dependencies=[Depends(verificar_admin)])
 def crear_municipio(nuevo_muni: dict):
-    if "id" not in nuevo_muni or "nombre" not in nuevo_muni:
+    if "id" not in nuevo_muni or "nombre" not in nuevo_muni or (nuevo_muni["nombre"] == "") or (nuevo_muni["id"] == ""):
         raise HTTPException(status_code=400, detail="Faltan datos obligatorios (id, nombre)")
 
     datos = cargar_datos()
