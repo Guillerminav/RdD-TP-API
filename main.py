@@ -27,7 +27,7 @@ def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
     if credentials.username != user or credentials.password != password:
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
     return credentials.username
-       
+
 
 #aca iria toda la data gral de la api
 @app.get("/")
