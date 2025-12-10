@@ -44,7 +44,7 @@ def intermedio_root():
     return {"info": "Servidor Intermedio Activo. Use /intermedio/municipios"}
 
 @app.get("/intermedio/municipios")
-def get_municipios(request: Request):
+def obtener_municipios_inter(request: Request):
 
     verificar_limite(request)
     
@@ -53,3 +53,53 @@ def get_municipios(request: Request):
         return response.json()
     except requests.exceptions.ConnectionError:
         raise HTTPException(status_code=503, detail="El servidor de datos no responde")
+
+@app.get("/intermedio/municipios/{id_municipio}")
+def obtener_municipio_inter(request: Request, id_municipio: str):
+    verificar_limite(request)
+    
+    try:
+        response = requests.get(f"{DATA_SERVER_URL}/municipios/{id_municipio}")
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json().get('detail'))
+        return response.json()
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(status_code=503, detail="El servidor de datos no responde")
+
+
+@app.post("/intermedio/municipios")
+def crear_municipio_inter(request: Request, datos: dict, cred: HTTPBasicCredentials = Depends(security)):
+    verificar_limite(request)
+    
+    try:
+        response = requests.post(
+            f"{DATA_SERVER_URL}/municipios",
+            json=datos,
+            auth=(cred.username, cred.password)
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json().get('detail'))
+        return response.json()
+        
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(status_code=503, detail="El servidor de datos no responde")
+
+
+@app.delete("/intermedio/municipios/{id_municipio}")
+def borrar_municipio_inter(request: Request, id_municipio: str, cred: HTTPBasicCredentials = Depends(security)):
+    verificar_limite(request)
+    
+    try:
+        response = requests.delete(
+            f"{DATA_SERVER_URL}/municipios/{id_municipio}",
+            auth=(cred.username, cred.password)
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json().get('detail'))
+        return response.json()
+        
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(status_code=503, detail="El servidor de datos no responde")
