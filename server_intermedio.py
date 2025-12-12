@@ -7,8 +7,19 @@ app = FastAPI()
 security = HTTPBasic()
 
 
-DATA_SERVER_URL = "http://127.0.0.1:8000"
-#DATA_SERVER_URL = "http://192.168.1.82:8000"
+#DATA_SERVER_URL = "http://127.0.0.1:8000"
+DATA_SERVER_URL = "http://192.168.1.2:8000"
+
+
+import os
+
+# 1. Forzar a Python a NO usar proxies para direcciones locales
+# (Reemplaza con la IP real del servidor de datos, la .2)
+os.environ['NO_PROXY'] = '192.168.1.2' 
+
+# 2. Opcional: Desactiva proxies globales por si acaso
+os.environ['HTTP_PROXY'] = ''
+os.environ['HTTPS_PROXY'] = ''
 
 
 historial_peticiones = {}

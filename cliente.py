@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 import json
 
 # IMPORTANTE: Apuntamos al intermedio (Puerto 8001), NO al servidor de datos.
-intermedio_URL = "http://127.0.0.1:8001"
+intermedio_URL = "http://192.168.1.2:8001"
 
 def mostrar_menu():
     print("\n" + "="*40)
