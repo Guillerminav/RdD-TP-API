@@ -8,6 +8,7 @@ security = HTTPBasic()
 
 
 DATA_SERVER_URL = "http://127.0.0.1:8000"
+#DATA_SERVER_URL = "http://192.168.1.82:8000"
 
 
 historial_peticiones = {}
@@ -103,3 +104,16 @@ def borrar_municipio_inter(request: Request, id_municipio: str, cred: HTTPBasicC
         
     except requests.exceptions.ConnectionError:
         raise HTTPException(status_code=503, detail="El servidor de datos no responde")
+    
+@app.get("/intermedio/distancia/{id1}/{id2}")
+def get_distancia_intermedio(request: Request, id1: str, id2: str):
+    verificar_limite(request)
+    
+    try:
+        response = requests.get(f"{DATA_SERVER_URL}/distancia/{id1}/{id2}")
+        if response.status_code != 200:
+             raise HTTPException(status_code=response.status_code, detail=response.json().get('detail'))
+        return response.json()
+    
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(status_code=503, detail="El servidor de datos no responde")

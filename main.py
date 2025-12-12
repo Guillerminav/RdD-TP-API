@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import json
+import math
 from pathlib import Path
 
 json_path = Path(__file__).parent / "municipios.json"
@@ -27,6 +28,22 @@ def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
     if credentials.username != user or credentials.password != password:
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
     return credentials.username
+
+def calcular_distancia_h(lat1, lon1, lat2, lon2):
+    """Calcula la distancia entre dos coordenadas"""
+    R = 6371  # radio del planeta en km
+    
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    
+    a = (math.sin(dlat / 2) * math.sin(dlat / 2) +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+         math.sin(dlon / 2) * math.sin(dlon / 2))
+    
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c
+    
+    return round(distance, 2)
 
 
 #aca iria toda la data gral de la api
@@ -84,3 +101,39 @@ def borrar_municipio(id_municipio: str):
     datos["municipios"] = nueva_lista
     guardar_datos(datos)
     return {"mensaje": f"Municipio {id_municipio} eliminado"}
+
+@app.get("/distancia/{id1}/{id2}")
+def get_distancia(id1: str, id2: str):
+    datos = cargar_datos()
+    muni1 = None
+    muni2 = None
+    
+    # buscamos los municipios
+    for m in datos.get("municipios", []):
+        if m["id"] == id1:
+            muni1 = m
+        if m["id"] == id2:
+            muni2 = m
+        if muni1 and muni2:
+            break
+            
+    if not muni1 or not muni2:
+        raise HTTPException(status_code=404, detail="Uno o ambos municipios no existen")
+        
+    # chequeamos que tengan coordenadas
+    if "centroide" not in muni1 or "centroide" not in muni2:
+        raise HTTPException(status_code=400, detail="Faltan coordenadas en los municipios")  
+    else:
+        muni1_centroide = muni1["centroide"]  
+        muni2_centroide = muni2["centroide"]  
+        
+    km = calcular_distancia_h(
+        muni1_centroide["lat"], muni1_centroide["lon"],
+        muni2_centroide["lat"], muni2_centroide["lon"]
+    )
+    
+    return {
+        "origen": muni1["nombre"],
+        "destino": muni2["nombre"],
+        "distancia_km": km
+    }
