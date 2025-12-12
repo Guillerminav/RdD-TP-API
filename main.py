@@ -4,6 +4,7 @@ import json
 import math
 from pathlib import Path
 
+# direccion del json
 json_path = Path(__file__).parent / "municipios.json"
 
 app = FastAPI()
@@ -46,7 +47,6 @@ def calcular_distancia_h(lat1, lon1, lat2, lon2):
     return round(distance, 2)
 
 
-#aca iria toda la data gral de la api
 @app.get("/")
 def read_root():
     return {"message": "API OK"}
@@ -57,7 +57,7 @@ def obtener_municipios():
     datos = cargar_datos()
     return datos.get("municipios", [])
 
-#buscar un municipio por su id
+# buscar un municipio por su id
 @app.get("/municipios/{id_municipio}")
 def obtener_municipio(id_municipio: str):
     datos = cargar_datos()
@@ -69,6 +69,7 @@ def obtener_municipio(id_municipio: str):
     
     raise HTTPException(status_code=404, detail="Municipio no encontrado")
 
+# agregar un municipio
 @app.post("/municipios", dependencies=[Depends(verificar_admin)])
 def crear_municipio(nuevo_muni: dict):
     if "id" not in nuevo_muni or "nombre" not in nuevo_muni or (nuevo_muni["nombre"] == "") or (nuevo_muni["id"] == ""):
@@ -77,7 +78,7 @@ def crear_municipio(nuevo_muni: dict):
     datos = cargar_datos()
     lista_municipios = datos.get("municipios", [])
     
-    # Validar que el ID no exista ya
+    # validamos que el id no exista ya
     for m in lista_municipios:
         if m['id'] == nuevo_muni['id']:
             raise HTTPException(status_code=400, detail=f"El ID {m['id']} pertenece al municipio {m['nombre']}")
@@ -88,6 +89,7 @@ def crear_municipio(nuevo_muni: dict):
     guardar_datos(datos)
     return {"mensaje": "Municipio creado exitosamente", "municipio": nuevo_muni}
 
+# eliminar un municipio
 @app.delete("/municipios/{id_municipio}", dependencies=[Depends(verificar_admin)])
 def borrar_municipio(id_municipio: str):
     datos = cargar_datos()
@@ -102,6 +104,7 @@ def borrar_municipio(id_municipio: str):
     guardar_datos(datos)
     return {"mensaje": f"Municipio {id_municipio} eliminado"}
 
+# distancia entre 2 municipios
 @app.get("/distancia/{id1}/{id2}")
 def get_distancia(id1: str, id2: str):
     datos = cargar_datos()
@@ -114,7 +117,7 @@ def get_distancia(id1: str, id2: str):
             muni1 = m
         if m["id"] == id2:
             muni2 = m
-        if muni1 and muni2:
+        if muni1 and muni2: # si ya los encontramos evitamos iteraciones
             break
             
     if not muni1 or not muni2:

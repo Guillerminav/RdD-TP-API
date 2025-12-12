@@ -6,7 +6,8 @@ import json
 import webbrowser
 
 # Configuración
-intermedio_URL = "http://192.168.1.5:8001"
+intermedio_URL = "http://127.0.0.1:8001"
+#intermedio_URL = "http://192.168.1.5:8001"
 
 class AppMunicipios:
     def __init__(self, root):
@@ -19,7 +20,7 @@ class AppMunicipios:
 
         # --- BOTONERA ---
         
-        # Botón 1: Ver Todos
+        # Botón 1: Ver todos
         tk.Button(root, text="1. Ver todos los municipios", font=("Arial", 12), 
                   command=self.obtener_municipios, bg="#e1f5fe", height=2, width=30).pack(pady=5)
 
@@ -35,11 +36,11 @@ class AppMunicipios:
         tk.Button(root, text="4. Eliminar Municipio (Admin)", font=("Arial", 12), 
                   command=self.eliminar_municipio, bg="#ffcdd2", height=2, width=30).pack(pady=5)
         
-        # Botón 5: Calcular Distancia
+        # Botón 5: Calcular distancia
         tk.Button(root, text="5. Calcular Distancia (KM)", font=("Arial", 12), 
                   command=self.calcular_distancia, bg="#dcedc8", height=2, width=30).pack(pady=5)
         
-        # Botón 6: Ver en Mapa (Google Maps)
+        # Botón 6: Ver en google maps
         tk.Button(root, text="6. Ver Municipio en Mapa", font=("Arial", 12), 
                   command=self.ver_mapa, bg="#b3e5fc", height=2, width=30).pack(pady=5)
 
@@ -93,22 +94,19 @@ class AppMunicipios:
 
     def agregar_municipio(self):
         nuevo_id = simpledialog.askstring("Nuevo", "ID del Municipio:", parent=self.root)
-        if not nuevo_id: return
         
         nuevo_nombre = simpledialog.askstring("Nuevo", "Nombre del Municipio:", parent=self.root)
-        if not nuevo_nombre: return
         
         nueva_prov = simpledialog.askstring("Nuevo", "Provincia (Dejar vacio para Default):", parent=self.root)
 
         # Pedir credenciales (Ahora con asteriscos en la contraseña)
         user = simpledialog.askstring("Seguridad", "Usuario Administrador:", parent=self.root)
-        if not user: return
         
         # show='*' oculta los caracteres
         pwd = simpledialog.askstring("Seguridad", "Contraseña:", parent=self.root, show='*') 
-        if not pwd: return
 
         datos = {"id": nuevo_id, "nombre": nuevo_nombre}
+        # Opcional
         if nueva_prov: datos["provincia"] = nueva_prov
 
         try:
@@ -133,10 +131,8 @@ class AppMunicipios:
         if not id_borrar: return
 
         user = simpledialog.askstring("Seguridad", "Usuario Administrador:", parent=self.root)
-        if not user: return
-        
+    
         pwd = simpledialog.askstring("Seguridad", "Contraseña:", parent=self.root, show='*')
-        if not pwd: return
 
         if messagebox.askyesno("Confirmar", "¿Está seguro?", parent=self.root):
             try:
@@ -151,15 +147,15 @@ class AppMunicipios:
                     messagebox.showerror("Error", "Credenciales Incorrectas", parent=self.root)
                 elif resp.status_code == 404:
                     messagebox.showerror("Error","❌ No se encontró ese municipio.", parent=self.root)
-            except:
-                messagebox.showerror("Error", "Error de conexión", parent=self.root)
+            except Exception as e:
+                self.mostrar_salida(f"Error: {e}")
     
     def calcular_distancia(self):
         id_origen = simpledialog.askstring("Distancia", "ID del Origen:", parent=self.root)
-        if not id_origen: return
+        if not id_origen: return messagebox.ERROR("Error","No ha ingresado un id origen", parent=self.root)
         
         id_destino = simpledialog.askstring("Distancia", "ID del Destino:", parent=self.root)
-        if not id_destino: return
+        if not id_destino: return messagebox.ERROR("Error","No ha ingresado un id destino", parent=self.root)
         
         try:
             self.mostrar_salida(f"Calculando distancia de {id_origen} a {id_destino}...")
