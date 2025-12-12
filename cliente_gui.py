@@ -3,9 +3,10 @@ from tkinter import simpledialog, messagebox, scrolledtext
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+import webbrowser
 
 # Configuración
-intermedio_URL = "http://192.168.1.21:8000"
+intermedio_URL = "http://192.168.1.5:8001"
 
 class AppMunicipios:
     def __init__(self, root):
@@ -33,6 +34,14 @@ class AppMunicipios:
         # Botón 4: Eliminar
         tk.Button(root, text="4. Eliminar Municipio (Admin)", font=("Arial", 12), 
                   command=self.eliminar_municipio, bg="#ffcdd2", height=2, width=30).pack(pady=5)
+        
+        # Botón 5: Calcular Distancia
+        tk.Button(root, text="5. Calcular Distancia (KM)", font=("Arial", 12), 
+                  command=self.calcular_distancia, bg="#dcedc8", height=2, width=30).pack(pady=5)
+        
+        # Botón 6: Ver en Mapa (Google Maps)
+        tk.Button(root, text="6. Ver Municipio en Mapa", font=("Arial", 12), 
+                  command=self.ver_mapa, bg="#b3e5fc", height=2, width=30).pack(pady=5)
 
         # --- PANTALLA DE SALIDA ---
         tk.Label(root, text="Respuesta del Servidor:", font=("Arial", 10, "bold")).pack(pady=(20, 0))
@@ -64,7 +73,7 @@ class AppMunicipios:
             else:
                 self.mostrar_salida(f"Error {resp.status_code}: {resp.text}")
         except:
-            messagebox.showerror("Error", "No se puede conectar al intermedio (Puerto 8000)", parent=self.root)
+            messagebox.showerror("Error", "No se puede conectar al intermedio", parent=self.root)
 
     def obtener_municipio(self):
         # El parametro parent=self.root fuerza al popup a estar encima
@@ -144,6 +153,58 @@ class AppMunicipios:
                     messagebox.showerror("Error","❌ No se encontró ese municipio.", parent=self.root)
             except:
                 messagebox.showerror("Error", "Error de conexión", parent=self.root)
+    
+    def calcular_distancia(self):
+        id_origen = simpledialog.askstring("Distancia", "ID del Origen:", parent=self.root)
+        if not id_origen: return
+        
+        id_destino = simpledialog.askstring("Distancia", "ID del Destino:", parent=self.root)
+        if not id_destino: return
+        
+        try:
+            self.mostrar_salida(f"Calculando distancia de {id_origen} a {id_destino}...")
+            self.root.update()
+            
+            resp = requests.get(f"{intermedio_URL}/intermedio/distancia/{id_origen}/{id_destino}")
+            self.mostrar_salida(resp.json())
+            
+        except Exception as e:
+            self.mostrar_salida(f"Error: {e}")
+
+    def ver_mapa(self):
+        id_mapa = simpledialog.askstring("Mapa", "ID del Municipio a ver:", parent=self.root)
+        if not id_mapa: return
+        
+        try:
+            
+            resp = requests.get(f"{intermedio_URL}/intermedio/municipios/{id_mapa}")
+            
+            if resp.status_code == 200:
+                data = resp.json()
+                self.mostrar_salida(data)
+                
+                
+                if "centroide" in data:
+                    centroide = data["centroide"]
+                    lat = centroide["lat"]
+                    lon = centroide["lon"]
+                    
+                    # URL de google maps
+                    # api=1&query=lat,lon abre un marcador en ese punto
+                    url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+                    
+                    self.mostrar_salida(f"🌍 Abriendo navegador en: {lat}, {lon}")
+                    webbrowser.open(url)
+                else:
+                    messagebox.showwarning("Faltan Datos", "Este municipio no tiene coordenadas (lat/lon) cargadas.", parent=self.root)
+            elif resp.status_code == 404:
+                messagebox.showerror("Error", "Municipio no encontrado", parent=self.root)
+            else:
+                self.mostrar_salida(f"Error {resp.status_code}: {resp.text}")
+                
+        except Exception as e:
+            self.mostrar_salida(f"Error: {e}")
+    
 
 # Ejecutar aplicación
 if __name__ == "__main__":
