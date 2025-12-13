@@ -63,7 +63,7 @@ class AppMunicipios:
     def obtener_municipios(self):
         try:
             self.mostrar_salida("Consultando al servidor...")
-            # Forzamos actualización de la ventana antes de pedir datos
+            # forzamos actualización de la ventana antes de pedir datos
             self.root.update()
             
             resp = requests.get(f"{intermedio_URL}/intermedio/municipios")
@@ -77,7 +77,7 @@ class AppMunicipios:
             messagebox.showerror("Error", "No se puede conectar al intermedio", parent=self.root)
 
     def obtener_municipio(self):
-        # El parametro parent=self.root fuerza al popup a estar encima
+        # el parametro parent=self.root fuerza al popup a estar encima
         id_buscado = simpledialog.askstring("Buscar", "Ingrese el ID del Municipio:", parent=self.root)
         
         if id_buscado:
@@ -99,7 +99,7 @@ class AppMunicipios:
         
         nueva_prov = simpledialog.askstring("Nuevo", "Provincia (Dejar vacio para Default):", parent=self.root)
 
-        # Pedir credenciales (Ahora con asteriscos en la contraseña)
+        # Pedir credenciales (ahora con asteriscos en la contraseña)
         user = simpledialog.askstring("Seguridad", "Usuario Administrador:", parent=self.root)
         
         # show='*' oculta los caracteres
@@ -152,10 +152,10 @@ class AppMunicipios:
     
     def calcular_distancia(self):
         id_origen = simpledialog.askstring("Distancia", "ID del Origen:", parent=self.root)
-        if not id_origen: return messagebox.ERROR("Error","No ha ingresado un id origen", parent=self.root)
+        if not id_origen: return
         
         id_destino = simpledialog.askstring("Distancia", "ID del Destino:", parent=self.root)
-        if not id_destino: return messagebox.ERROR("Error","No ha ingresado un id destino", parent=self.root)
+        if not id_destino: return
         
         try:
             self.mostrar_salida(f"Calculando distancia de {id_origen} a {id_destino}...")
